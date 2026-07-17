@@ -24,11 +24,13 @@ function ChatFlow({ language }) {
 
   const [finished, setFinished] = useState(false)
 
+  const [changing, setChanging] = useState(false)
+
+  const [selectedOptions, setSelectedOptions] = useState([])
+
   const [otherSelected, setOtherSelected] = useState(false)
 
   const [otherText, setOtherText] = useState("")
-
-  const [selectedOptions, setSelectedOptions] = useState([])
 
 
 
@@ -37,22 +39,41 @@ function ChatFlow({ language }) {
 
 
 
-  // 保存数据到 Supabase
+  function getProgress(){
 
-  async function saveFeedback(finalMessages) {
+    if(currentId === "q1"){
+      return "1/4"
+    }
+
+    if(currentId === "q2"){
+      return "2/4"
+    }
+
+    if(currentId === "q3"){
+      return "3/4"
+    }
+
+    return "4/4"
+
+  }
+
+
+
+
+  async function saveFeedback(data){
 
 
     const answers = {}
 
 
-    finalMessages.forEach(item => {
+    data.forEach(item=>{
 
       answers[item.id] = item.answer
 
     })
 
 
-    const { error } = await supabase
+    const {error} = await supabase
       .from("feedbacks")
       .insert({
 
@@ -71,10 +92,7 @@ function ChatFlow({ language }) {
 
     if(error){
 
-      console.log(
-        "Save error:",
-        error
-      )
+      console.log(error)
 
     }
 
@@ -84,8 +102,6 @@ function ChatFlow({ language }) {
 
 
 
-  // 进入下一题
-
   function goNext(answer){
 
 
@@ -94,13 +110,9 @@ function ChatFlow({ language }) {
       ...messages,
 
       {
-
         id: currentId,
-
         question: currentQuestion.q,
-
         answer: answer
-
       }
 
     ]
@@ -109,33 +121,32 @@ function ChatFlow({ language }) {
     setMessages(newMessages)
 
 
-    let nextQuestion =
-      currentQuestion.next
+
+    let next = currentQuestion.next
 
 
 
-    // 分叉逻辑
+    if(typeof next === "object"){
 
-    if(typeof nextQuestion === "object"){
-
-      nextQuestion =
-        nextQuestion[answer]
+      next = next[answer]
 
     }
 
 
 
+    setSelectedOptions([])
+
     setOtherSelected(false)
 
     setOtherText("")
 
-    setSelectedOptions([])
+
+
+    setChanging(true)
 
 
 
-    // 完成
-
-    if(nextQuestion === "end"){
+    if(next === "end"){
 
 
       saveFeedback(newMessages)
@@ -145,7 +156,7 @@ function ChatFlow({ language }) {
 
         setFinished(true)
 
-      },300)
+      },500)
 
 
       return
@@ -156,11 +167,13 @@ function ChatFlow({ language }) {
 
     setTimeout(()=>{
 
+      setCurrentId(next)
 
-      setCurrentId(nextQuestion)
+      setChanging(false)
+
+    },250)
 
 
-    },300)
 
   }
 
@@ -168,30 +181,17 @@ function ChatFlow({ language }) {
 
 
 
-
-
-  // 点击选项
-
   function choose(option){
 
-
-
-    // 多选
 
     if(currentQuestion.type === "multiple"){
 
 
-
-      if(
-        option === "其他"
-        ||
-        option === "Other"
-      ){
+      if(option === "其他" || option === "Other"){
 
         setOtherSelected(true)
 
       }
-
 
 
       if(selectedOptions.includes(option)){
@@ -200,7 +200,7 @@ function ChatFlow({ language }) {
         setSelectedOptions(
 
           selectedOptions.filter(
-            item=>item !== option
+            item=>item!==option
           )
 
         )
@@ -227,13 +227,9 @@ function ChatFlow({ language }) {
 
 
 
-    // 单选 Other
 
-    if(
-      option === "其他"
-      ||
-      option === "Other"
-    ){
+    if(option === "其他" || option === "Other"){
+
 
       setOtherSelected(true)
 
@@ -242,20 +238,10 @@ function ChatFlow({ language }) {
     }
 
 
-
     goNext(option)
 
   }
-
-
-
-
-
-
-
-  // 提交多选
-
-  function submitMultiple(){
+    function submitMultiple(){
 
 
     let answers = [
@@ -264,25 +250,19 @@ function ChatFlow({ language }) {
 
 
     if(
-      selectedOptions.includes("其他")
-      ||
+      selectedOptions.includes("其他") ||
       selectedOptions.includes("Other")
     ){
 
-
-      if(
-        otherText.trim() === ""
-      ){
+      if(otherText.trim()===""){
 
         return
 
       }
 
-
       answers.push(otherText)
 
     }
-
 
 
     if(answers.length===0){
@@ -292,11 +272,9 @@ function ChatFlow({ language }) {
     }
 
 
-
     goNext(
       answers.join(" / ")
     )
-
 
   }
 
@@ -304,16 +282,10 @@ function ChatFlow({ language }) {
 
 
 
-
-
-  // 提交Other
-
   function submitOther(){
 
 
-    if(
-      otherText.trim()===""
-    ){
+    if(otherText.trim()===""){
 
       return
 
@@ -328,26 +300,18 @@ function ChatFlow({ language }) {
 
 
 
-
-
-  // 返回上一题
-
   function goBack(){
 
 
-    const ids =
-      Object.keys(
-        currentLanguage.questions
-      )
+    const ids = Object.keys(
+      currentLanguage.questions
+    )
 
 
-    const index =
-      ids.indexOf(currentId)
-
+    const index = ids.indexOf(currentId)
 
 
     if(index > 0){
-
 
       setCurrentId(
         ids[index-1]
@@ -366,19 +330,13 @@ function ChatFlow({ language }) {
 
 
 
-
-
-  // 完成页面
-
   if(finished){
-
 
     return (
 
       <div className="chat-container">
 
         <div className="thank-card">
-
 
           <div className="success-icon">
             ✓
@@ -411,8 +369,6 @@ function ChatFlow({ language }) {
 
 
 
-
-
   return (
 
     <div className="chat-container">
@@ -422,53 +378,19 @@ function ChatFlow({ language }) {
 
 
         <span
-
           className="back-button"
-
           onClick={goBack}
-
         >
-
           ←
-
         </span>
 
 
 
+        <div className="progress-text">
 
-        <div className="dots">
-
-
-          {
-            [
-              "q1",
-              "q2",
-              "q3",
-              "q4"
-            ].map(item=>(
-
-
-              <span
-
-                key={item}
-
-                className={
-                  item===currentId
-                  ?
-                  "active-dot"
-                  :
-                  ""
-                }
-
-              />
-
-
-            ))
-          }
-
+          {getProgress()}
 
         </div>
-
 
 
       </div>
@@ -477,14 +399,20 @@ function ChatFlow({ language }) {
 
 
 
-
-      <div className="chat-history">
+      <div
+        className={
+          changing
+          ?
+          "chat-history fade"
+          :
+          "chat-history"
+        }
+      >
 
 
 
         {
           messages.map((item,index)=>(
-
 
             <div key={index}>
 
@@ -506,7 +434,6 @@ function ChatFlow({ language }) {
 
             </div>
 
-
           ))
         }
 
@@ -514,10 +441,23 @@ function ChatFlow({ language }) {
 
 
 
-
         <div className="question-message current">
 
+
           {currentQuestion.q}
+
+
+          {
+            currentQuestion.hint &&
+
+            <div className="question-hint">
+
+              {currentQuestion.hint}
+
+            </div>
+
+          }
+
 
         </div>
 
@@ -531,7 +471,6 @@ function ChatFlow({ language }) {
           otherSelected
 
           ?
-
 
           <div className="other-box">
 
@@ -557,7 +496,6 @@ function ChatFlow({ language }) {
                 currentLanguage.placeholder
               }
 
-
             />
 
 
@@ -577,9 +515,7 @@ function ChatFlow({ language }) {
 
             >
 
-              {
-                currentLanguage.continue
-              }
+              {currentLanguage.continue}
 
 
             </button>
@@ -635,9 +571,7 @@ function ChatFlow({ language }) {
 
           </div>
 
-
         }
-
 
 
 
@@ -645,12 +579,12 @@ function ChatFlow({ language }) {
 
         {
           currentQuestion.type==="multiple"
+
           &&
+
           selectedOptions.length>0
-          &&
-          !otherSelected
-          &&
 
+          &&
 
           <button
 
@@ -679,42 +613,6 @@ function ChatFlow({ language }) {
 
         }
 
-
-
-
-        {
-          currentQuestion.type==="multiple"
-          &&
-          otherSelected
-          &&
-
-
-          <button
-
-            className="continue active"
-
-            onClick={submitMultiple}
-
-          >
-
-            {
-              currentId==="q4_good"
-              ||
-              currentId==="q4_bad"
-
-              ?
-
-              currentLanguage.submit
-
-              :
-
-              currentLanguage.continue
-            }
-
-
-          </button>
-
-        }
 
 
 
