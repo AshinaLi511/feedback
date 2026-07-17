@@ -18,19 +18,19 @@ function ChatFlow({ language }) {
   const currentLanguage = languageData[language]
 
 
-  const [currentId, setCurrentId] = useState("q1")
+  const [currentId,setCurrentId] = useState("q1")
 
-  const [messages, setMessages] = useState([])
+  const [messages,setMessages] = useState([])
 
-  const [finished, setFinished] = useState(false)
+  const [finished,setFinished] = useState(false)
 
-  const [changing, setChanging] = useState(false)
+  const [selectedOptions,setSelectedOptions] = useState([])
 
-  const [selectedOptions, setSelectedOptions] = useState([])
+  const [otherSelected,setOtherSelected] = useState(false)
 
-  const [otherSelected, setOtherSelected] = useState(false)
+  const [otherText,setOtherText] = useState("")
 
-  const [otherText, setOtherText] = useState("")
+  const [changing,setChanging] = useState(false)
 
 
 
@@ -41,17 +41,21 @@ function ChatFlow({ language }) {
 
   function getProgress(){
 
-    if(currentId === "q1"){
+
+    if(currentId==="q1"){
       return "1/4"
     }
 
-    if(currentId === "q2"){
+
+    if(currentId==="q2"){
       return "2/4"
     }
 
-    if(currentId === "q3"){
+
+    if(currentId==="q3"){
       return "3/4"
     }
+
 
     return "4/4"
 
@@ -60,34 +64,37 @@ function ChatFlow({ language }) {
 
 
 
+
   async function saveFeedback(data){
 
 
-    const answers = {}
+    const answers={}
 
 
     data.forEach(item=>{
 
-      answers[item.id] = item.answer
+      answers[item.id]=item.answer
 
     })
 
 
-    const {error} = await supabase
+
+    const {error}=await supabase
       .from("feedbacks")
       .insert({
 
-        language: language,
+        language,
 
-        q1: answers.q1 || "",
+        q1:answers.q1 || "",
 
-        q2: answers.q2 || "",
+        q2:answers.q2 || "",
 
-        q3: answers.q3 || "",
+        q3:answers.q3 || "",
 
-        q4: answers.q4 || ""
+        q4:answers.q4 || ""
 
       })
+
 
 
     if(error){
@@ -105,30 +112,35 @@ function ChatFlow({ language }) {
   function goNext(answer){
 
 
-    const newMessages = [
+    const newMessages=[
 
       ...messages,
 
       {
-        id: currentId,
-        question: currentQuestion.q,
-        answer: answer
+
+        id:currentId,
+
+        question:currentQuestion.q,
+
+        answer
+
       }
 
     ]
+
 
 
     setMessages(newMessages)
 
 
 
-    let next = currentQuestion.next
+    let next=currentQuestion.next
 
 
 
-    if(typeof next === "object"){
+    if(typeof next==="object"){
 
-      next = next[answer]
+      next=next[answer]
 
     }
 
@@ -146,10 +158,11 @@ function ChatFlow({ language }) {
 
 
 
-    if(next === "end"){
+    if(next==="end"){
 
 
       saveFeedback(newMessages)
+
 
 
       setTimeout(()=>{
@@ -167,12 +180,13 @@ function ChatFlow({ language }) {
 
     setTimeout(()=>{
 
+
       setCurrentId(next)
 
       setChanging(false)
 
-    },250)
 
+    },250)
 
 
   }
@@ -181,20 +195,32 @@ function ChatFlow({ language }) {
 
 
 
+
   function choose(option){
 
 
-    if(currentQuestion.type === "multiple"){
+
+    // 多选
+
+    if(currentQuestion.type==="multiple"){
 
 
-      if(option === "其他" || option === "Other"){
+
+      if(
+        option==="其他"
+        ||
+        option==="Other"
+      ){
 
         setOtherSelected(true)
 
       }
 
 
-      if(selectedOptions.includes(option)){
+
+      if(
+        selectedOptions.includes(option)
+      ){
 
 
         setSelectedOptions(
@@ -220,6 +246,7 @@ function ChatFlow({ language }) {
       }
 
 
+
       return
 
     }
@@ -228,8 +255,14 @@ function ChatFlow({ language }) {
 
 
 
-    if(option === "其他" || option === "Other"){
 
+    // 单选其他
+
+    if(
+      option==="其他"
+      ||
+      option==="Other"
+    ){
 
       setOtherSelected(true)
 
@@ -238,21 +271,33 @@ function ChatFlow({ language }) {
     }
 
 
+
     goNext(option)
 
+
   }
-    function submitMultiple(){
 
 
-    let answers = [
+
+
+
+  function submitMultiple(){
+
+
+    let answers=[
+
       ...selectedOptions
+
     ]
 
 
+
     if(
-      selectedOptions.includes("其他") ||
+      selectedOptions.includes("其他")
+      ||
       selectedOptions.includes("Other")
     ){
+
 
       if(otherText.trim()===""){
 
@@ -260,9 +305,11 @@ function ChatFlow({ language }) {
 
       }
 
+
       answers.push(otherText)
 
     }
+
 
 
     if(answers.length===0){
@@ -272,35 +319,16 @@ function ChatFlow({ language }) {
     }
 
 
+
     goNext(
+
       answers.join(" / ")
+
     )
 
-  }
-
-
-
-
-
-  function submitOther(){
-
-
-    if(otherText.trim()===""){
-
-      return
-
-    }
-
-
-    goNext(otherText)
 
   }
-
-
-
-
-
-  function goBack(){
+    function goBack(){
 
 
     const ids = Object.keys(
@@ -309,6 +337,7 @@ function ChatFlow({ language }) {
 
 
     const index = ids.indexOf(currentId)
+
 
 
     if(index > 0){
@@ -332,11 +361,13 @@ function ChatFlow({ language }) {
 
   if(finished){
 
+
     return (
 
       <div className="chat-container">
 
         <div className="thank-card">
+
 
           <div className="success-icon">
             ✓
@@ -369,6 +400,8 @@ function ChatFlow({ language }) {
 
 
 
+
+
   return (
 
     <div className="chat-container">
@@ -378,10 +411,15 @@ function ChatFlow({ language }) {
 
 
         <span
+
           className="back-button"
+
           onClick={goBack}
+
         >
+
           ←
+
         </span>
 
 
@@ -399,20 +437,14 @@ function ChatFlow({ language }) {
 
 
 
-      <div
-        className={
-          changing
-          ?
-          "chat-history fade"
-          :
-          "chat-history"
-        }
-      >
+
+      <div className="chat-history">
 
 
 
         {
           messages.map((item,index)=>(
+
 
             <div key={index}>
 
@@ -424,7 +456,6 @@ function ChatFlow({ language }) {
               </div>
 
 
-
               <div className="answer-message">
 
                 {item.answer}
@@ -434,8 +465,11 @@ function ChatFlow({ language }) {
 
             </div>
 
+
           ))
         }
+
+
 
 
 
@@ -445,6 +479,7 @@ function ChatFlow({ language }) {
 
 
           {currentQuestion.q}
+
 
 
           {
@@ -467,10 +502,65 @@ function ChatFlow({ language }) {
 
 
 
-        {
-          otherSelected
 
-          ?
+        <div className="options">
+
+
+          {
+
+            currentQuestion.options.map(option=>(
+
+
+              <OptionButton
+
+
+                key={option}
+
+
+                text={
+
+                  selectedOptions.includes(option)
+
+                  ?
+
+                  "✓ " + option
+
+                  :
+
+                  option
+
+                }
+
+
+                onClick={
+
+                  ()=>choose(option)
+
+                }
+
+
+              />
+
+
+            ))
+
+          }
+
+
+        </div>
+
+
+
+
+
+
+
+
+        {
+
+
+          otherSelected &&
+
 
           <div className="other-box">
 
@@ -485,91 +575,29 @@ function ChatFlow({ language }) {
 
             <input
 
+
               value={otherText}
 
+
               onChange={
+
                 e=>setOtherText(e.target.value)
+
               }
 
 
               placeholder={
+
                 currentLanguage.placeholder
+
               }
+
 
             />
 
 
-
-            <button
-
-              className={
-                otherText.trim()
-                ?
-                "continue active"
-                :
-                "continue"
-              }
-
-
-              onClick={submitOther}
-
-            >
-
-              {currentLanguage.continue}
-
-
-            </button>
-
-
           </div>
 
-
-
-          :
-
-
-
-          <div className="options">
-
-
-            {
-              currentQuestion.options.map(option=>(
-
-
-                <OptionButton
-
-
-                  key={option}
-
-
-                  text={
-
-                    selectedOptions.includes(option)
-
-                    ?
-
-                    "✓ " + option
-
-                    :
-
-                    option
-
-                  }
-
-
-                  onClick={
-                    ()=>choose(option)
-                  }
-
-
-                />
-
-
-              ))
-            }
-
-
-          </div>
 
         }
 
@@ -577,7 +605,12 @@ function ChatFlow({ language }) {
 
 
 
+
+
+
         {
+
+
           currentQuestion.type==="multiple"
 
           &&
@@ -586,32 +619,64 @@ function ChatFlow({ language }) {
 
           &&
 
+          (
+
+            !otherSelected
+
+            ||
+
+            otherText.trim()!==""
+
+
+          )
+
+          &&
+
+
+
           <button
+
 
             className="continue active"
 
+
             onClick={submitMultiple}
+
 
           >
 
+
             {
+
+
               currentId==="q4_good"
+
               ||
+
               currentId==="q4_bad"
+
 
               ?
 
               currentLanguage.submit
 
+
               :
 
               currentLanguage.continue
+
+
             }
+
 
 
           </button>
 
+
+
         }
+
+
 
 
 
@@ -623,6 +688,7 @@ function ChatFlow({ language }) {
     </div>
 
   )
+
 
 }
 
