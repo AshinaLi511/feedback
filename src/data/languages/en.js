@@ -1,9 +1,9 @@
 const en = {
 
-  questions: {
+  questions:{
 
 
-    q1: {
+    q1:{
 
       id:"q1",
 
@@ -29,7 +29,7 @@ const en = {
 
 
 
-    q2: {
+    q2:{
 
       id:"q2",
 
@@ -61,7 +61,7 @@ const en = {
 
 
 
-    q3: {
+    q3:{
 
       id:"q3",
 
@@ -87,7 +87,7 @@ const en = {
 
 
 
-    q4: {
+    q4:{
 
       id:"q4",
 
@@ -189,8 +189,6 @@ const en = {
 
         "More complicated than expected",
 
-        "No, everything matched my expectations",
-
         "Other"
 
       ],
@@ -206,6 +204,7 @@ const en = {
 
 
   },
+
 
 
   otherTitle:"Tell us more",
