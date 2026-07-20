@@ -4,15 +4,42 @@ import { supabase } from "../lib/supabase"
 
 import zh from "../data/languages/zh"
 import en from "../data/languages/en"
+import ja from "../data/languages/ja"
+import ko from "../data/languages/ko"
+import es from "../data/languages/es"
+import pt from "../data/languages/pt"
+import th from "../data/languages/th"
+import vi from "../data/languages/vi"
+import fr from "../data/languages/fr"
+import de from "../data/languages/de"
 
 
 function ChatFlow({ language }) {
 
 
   const languageData = {
-    zh,
-    en
-  }
+
+  zh,
+
+  en,
+
+  ja,
+
+  ko,
+
+  es,
+
+  pt,
+
+  th,
+
+  vi,
+
+  fr,
+
+  de
+
+}
 
 
   const currentLanguage = languageData[language]
